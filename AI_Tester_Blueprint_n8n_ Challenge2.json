@@ -1,0 +1,156 @@
+{
+  "name": "AI_Tester_Blueprint_n8n_ Challenge2",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "responseMode": "responseNodes"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -512,
+        -96
+      ],
+      "id": "cce86a5e-cb10-4314-89ab-1cc89f427435",
+      "name": "When chat message received",
+      "webhookId": "edf4d1a2-175e-4af4-a662-7ceded407b64"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $node[\"Get an issue\"].json[\"fields\"][\"description\"] }}",
+        "options": {
+          "systemMessage": "Role: Senior QA Engineer specializing in Manual and Automation Testing.\nInstructions (RICE POT):\n\nRole: Senior QA Engineer.\n\nInput: Feature requirements provided by the user.\n\nContext: Create functional test cases for the STLC phase.\n\nExecution: Analyze the requirement for happy paths, edge cases, and security constraints.\n\nProduct: A comprehensive Test Case Table.\n\nOutput Format: Markdown Table with columns: [ID, Test Case Description, Pre-conditions, Steps, Expected Result, Priority].\n\nTarget: Developers and QA Testers.\n\nConstraints:\n\nGenerate ONLY based on the provided requirement.\n\nIf information (like specific URLs or field names) is missing, write \"Needs clarification\".\n\nEnsure coverage for Negative scenarios and Edge cases."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -48,
+        -128
+      ],
+      "id": "373497fd-3dad-49e5-8acf-45ccb09bdf1c",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        32
+      ],
+      "id": "4f3a96f3-0b0f-469d-b180-27e268c2fc2f",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "kj0FWMjRvjLNjZxe",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "message": "= {{ $node[\"AI Agent\"].json[\"output\"] }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "typeVersion": 1.2,
+      "position": [
+        304,
+        -96
+      ],
+      "id": "d5cd8498-2c53-4f11-9910-974a052754fb",
+      "name": "Chat",
+      "webhookId": "6243d525-60ae-4833-84b9-20447f93e668"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "issueKey": "={{ $json.chatInput }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        -112
+      ],
+      "id": "3031d8cb-1538-4365-a621-0a4cef579caf",
+      "name": "Get an issue",
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "HZnjHkx1fSCZYIzZ",
+          "name": "Jira SW Cloud account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Get an issue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get an issue": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "997b797f-1ec2-4b7b-8dec-23606ed8872b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5ea619d9b428cab9b32257d9c1198160c030d8ba71a7e199c53ee9c5a906432e"
+  },
+  "id": "tFSVx5R5VXcI5GZ8",
+  "tags": []
+}
